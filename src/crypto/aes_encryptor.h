@@ -8,23 +8,22 @@
 #include <string>
 #include <memory>
 
-namespace io {
-class InputStream;
-class OutputStream;
-} // namespace io
-
 namespace crypto {
 
 class AESEncryptor {
  public:
   virtual ~AESEncryptor() {}  
 
-  virtual base::Status Encrypt(const io::InputStream* input_stream, 
-                               io::OutputStream* output_stream) = 0;
-  virtual base::Status Decrypt(const io::InputStream* input_stream,
-                               io::OutputStream* output_stream) = 0;
-};
+  // @padding 当加密的是最后一个block时，要指明padding
+  virtual base::Status Encrypt(const std::unique_ptr<AESKey>& key,
+                               const std::string& in,
+                               std::string* out, bool padding=false) = 0;
 
+  // TODO(wqx): 是否要加上padding 参数呢？
+  virtual base::Status Decrypt(const std::unique_ptr<AESKey>& key,
+                               const std::string& in,
+                               std::string* out) = 0;
+};
 
 class AESFactory {
  public:
@@ -40,7 +39,6 @@ class AESFactory {
   static base::Status GetFactory(const std::string& encryptor_type,
                                  AESFactory** out_factory);
 };
-
 
 } // namespace crypto
 #endif // CRYPTO_AES_ENCRYPTOR_H_

@@ -15,6 +15,8 @@ using std::string;
 // Basic string utility routines
 namespace strings {
 
+char* WriteInto(std::string* str, size_t length_with_null);
+
 // Returns a version of 'src' where unprintable characters have been
 // escaped using C-style escape sequences.
 string CEscape(const string& src);

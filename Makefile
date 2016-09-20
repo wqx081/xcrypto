@@ -1,8 +1,14 @@
 CXXFLAGS += -std=c++11
+CXXFLAGS += -I./
 CXXFLAGS += -I./src/
+CXXFLAGS += -I./third_party/boringssl/include/
 CXXFLAGS += -std=c++11 -Wall -Werror -g -c -o
 
-LIB_FILES :=-lglog -lgflags -levent  -lpthread -lssl -lcrypto -lz
+LIB_FILES :=-lglog -lgflags -levent  -lpthread -lz -ldl \
+	./third_party/boringssl/build/crypto/libcrypto.a \
+	./third_party/boringssl/build/ssl/libssl.a \
+	./third_party/boringssl/build/decrepit/libdecrepit.a \
+
 TEST_LIB_FILES :=  -L/usr/local/lib -lgtest -lgtest_main -lpthread
 
 PROTOC = protoc
@@ -10,9 +16,13 @@ GRPC_CPP_PLUGIN=grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 PROTOS_PATH = ./protos
 
+UNITTEST=./src/unittestes/
+
 CPP_SOURCES := \
 	./src/base/status.cc \
+	./src/base/location.cc \
 	./src/strings/string_piece.cc \
+	./src/strings/string_encode.cc \
 	./src/strings/stringprintf.cc \
 	./src/strings/string_util.cc \
 	./src/strings/strcat.cc \
@@ -38,104 +48,63 @@ CPP_SOURCES := \
 	./src/io/copy_output_stream.cc \
 	./src/io/file_input_stream.cc \
 	./src/io/file_output_stream.cc \
+	./src/unittestes/io/io_test.cc \
+	./src/io/io_util.cc \
 	\
-	./src/crypto/ssl_aes_key.cc \
+	./src/crypto/openssl_util.cc \
+	./src/crypto/ssl_aes_util.cc \
 	./src/crypto/aes_encryptor.cc \
+	./src/crypto/aes_key.cc \
 
 
 CPP_OBJECTS := $(CPP_SOURCES:.cc=.o)
 
 
 TESTS := \
-
+	$(UNITTEST)/crypto/aes_key_unittest \
+	./src/unittestes/io/array_io_unittest \
+	./src/unittestes/crypto/ssl_aes_util_unittest \
 
 all: $(CPP_OBJECTS) $(TESTS)
 .cc.o:
 	@echo "  [CXX]  $@"
 	@$(CXX) $(CXXFLAGS) $@ $<
 
-./unittests/strings/string_piece_unittest: \
-	./unittests/strings/string_piece_unittest.o \
-	./strings/string_piece.h \
-	./strings/string_piece.o
+## Crypto
+$(UNITTEST)/crypto/aes_key_unittest: \
+	$(UNITTEST)/crypto/aes_key_unittest.o \
+	./src/crypto/aes_key.o
 	@echo "  [LINK] $@"
 	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/strings/string_piece_unittest.o: \
-	./unittests/strings/string_piece_unittest.cc
+./src/unittests/crypto/aes_key_unittest.o: \
+	./src/unittestes/crypto/aes_key_unittest.cc
 	@echo "  [CXX]  $@"
 	@$(CXX) $(CXXFLAGS) $@ $<
 
-./unittests/strings/split_unittest: \
-	./unittests/strings/split_unittest.o \
-	./strings/split.h \
-	./strings/split.o
+./src/unittestes/crypto/ssl_aes_util_unittest: \
+	./src/unittestes/crypto/ssl_aes_util_unittest.o \
+	./src/crypto/ssl_aes_util.o \
+	./src/crypto/aes_key.o \
+	./src/io/io_util.o \
+	./src/crypto/ssl_aes_util.h
 	@echo "  [LINK] $@"
 	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/strings/split_unittest.o: \
-	./unittests/strings/split_unittest.cc
-	@echo "  [CXX]  $@"
-	@$(CXX) $(CXXFLAGS) $@ $<
-
-./unittests/event/event_loop_unittest: \
-	./unittests/event/event_loop_unittest.o \
-	./event/event_loop_libevent.h \
-	./event/event_loop_interface.h \
-	./event/event_loop_libevent.o
-	@echo "  [LINK] $@"
-	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/event/event_loop_unittest.o: \
-	./unittests/event/event_loop_unittest.cc
-	@echo "  [CXX]  $@"
-	@$(CXX) $(CXXFLAGS) $@ $<
-
-./unittests/net/tcp_server_socket_unittest: \
-	./unittests/net/tcp_server_socket_unittest.o \
-	./event/event_loop_libevent.h \
-	./event/event_loop_libevent.o \
-	./net/test_completion_callback.o \
-	./event/io_event_loop.h \
-	./base/run_loop.o
-	@echo "  [LINK] $@"
-	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/net/tcp_server_socket_unittest.o: \
-	./unittests/net/tcp_server_socket_unittest.cc
+./src/unittestes/crypto/ssl_aes_util_unittest.o: \
+	./src/unittestes/crypto/ssl_aes_util_unittest.cc
 	@echo "  [CXX]  $@"
 	@$(CXX) $(CXXFLAGS) $@ $<
 
 
-./unittests/server/http/http_server_unittest: \
-	./unittests/server/http/http_server_unittest.o \
-	./server/http/http_server.o
+## IO
+./src/unittestes/io/array_io_unittest: \
+	./src/unittestes/io/array_io_unittest.o
 	@echo "  [LINK] $@"
 	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/server/http/http_server_unittest.o: \
-	./unittests/server/http/http_server_unittest.cc
+./src/unittestes/io/array_io_unittest.o: \
+	./src/unittestes/io/array_io_unittest.cc
 	@echo "  [CXX]  $@"
 	@$(CXX) $(CXXFLAGS) $@ $<
 
-./unittests/event/io_event_loop_unittest: \
-	./unittests/event/io_event_loop_unittest.o \
-	./event/io_event_loop.o \
-	./event/event_loop_libevent.o \
-	./event/io_event_loop.h \
-	./base/run_loop.o \
-	./base/run_loop.h
-	@echo "  [LINK] $@"
-	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/event/io_event_loop_unittest.o: \
-	./unittests/event/io_event_loop_unittest.cc
-	@echo "  [CXX]  $@"
-	@$(CXX) $(CXXFLAGS) $@ $<
-
-
-./unittests/threading/watchdog_unittest: \
-	./unittests/threading/watchdog_unittest.o
-	@echo "  [LINK] $@"
-	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
-./unittests/threading/watchdog_unittest.o: \
-	./unittests/threading/watchdog_unittest.cc
-	@echo "  [CXX]  $@"
-	@$(CXX) $(CXXFLAGS) $@ $<
 
 ## /////////////////////////////
 

@@ -2,6 +2,7 @@
 *.d
 *.pyc
 *.swp
+third_party/*
 
 # Compiled Object files
 *.slo

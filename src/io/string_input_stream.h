@@ -5,7 +5,7 @@
 
 namespace io {
 
-typedef ArrayInputStream StringInputStream;
+typedef io::ArrayInputStream StringInputStream;
 
 } // namespace io
 #endif // CRYPTO_IO_STRING_INPUT_STREAM_H_
