@@ -90,6 +90,7 @@ bool CryptInternalNoCounter(Cipher cip,
     do_cbc = false;
   }
 
+
   ScopedCipherCTX ctx;
   if (!EVP_CipherInit_ex(ctx.get(), cipher, nullptr,
                          reinterpret_cast<const uint8_t*>(raw_key.data()),
@@ -113,10 +114,9 @@ bool CryptInternalNoCounter(Cipher cip,
     } else if (ret < in_buffer_len) {
       last_block = true;
     } else if (ret == in_buffer_len) {
-      if (do_encrypt && !io::IOUtil::PeekInput(in)) {
-        //output_size = AES_BLOCK_SIZE * 2;
+      if (!io::IOUtil::PeekInput(in)) {
         last_block = true;
-      }
+      } 
     }
 
     uint8_t* out_ptr = reinterpret_cast<uint8_t*>(out_buffer);

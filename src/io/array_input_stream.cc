@@ -27,7 +27,6 @@ bool ArrayInputStream::Next(const void** data, int* size) {
     last_returned_size_ = 0;
     return false;
   }
-  return true;
 }
 
 void ArrayInputStream::BackUp(int count) {

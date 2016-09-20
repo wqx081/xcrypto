@@ -53,9 +53,10 @@ CPP_SOURCES := \
 	\
 	./src/crypto/openssl_util.cc \
 	./src/crypto/ssl_aes_util.cc \
-	./src/crypto/aes_encryptor.cc \
 	./src/crypto/aes_key.cc \
-
+	./src/crypto/aes_encryptor.cc \
+	./src/crypto/ssl_cbc_aes_encryptor.cc \
+	./src/crypto/ssl_ecb_aes_encryptor.cc \
 
 CPP_OBJECTS := $(CPP_SOURCES:.cc=.o)
 
@@ -64,6 +65,7 @@ TESTS := \
 	$(UNITTEST)/crypto/aes_key_unittest \
 	./src/unittestes/io/array_io_unittest \
 	./src/unittestes/crypto/ssl_aes_util_unittest \
+	./src/unittestes/crypto/ssl_ecb_aes_encryptor_unittest \
 
 all: $(CPP_OBJECTS) $(TESTS)
 .cc.o:
@@ -86,6 +88,7 @@ $(UNITTEST)/crypto/aes_key_unittest: \
 	./src/crypto/ssl_aes_util.o \
 	./src/crypto/aes_key.o \
 	./src/io/io_util.o \
+	./src/io/array_input_stream.o \
 	./src/crypto/ssl_aes_util.h
 	@echo "  [LINK] $@"
 	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
@@ -94,6 +97,14 @@ $(UNITTEST)/crypto/aes_key_unittest: \
 	@echo "  [CXX]  $@"
 	@$(CXX) $(CXXFLAGS) $@ $<
 
+./src/unittestes/crypto/ssl_ecb_aes_encryptor_unittest: \
+	./src/unittestes/crypto/ssl_ecb_aes_encryptor_unittest.o
+	@echo "  [LINK] $@"
+	@$(CXX) -o $@ $< $(CPP_OBJECTS) $(LIB_FILES) $(TEST_LIB_FILES)
+./src/unittestes/crypto/ssl_ecb_aes_encryptor_unittest.o: \
+	./src/unittestes/crypto/ssl_ecb_aes_encryptor_unittest.cc
+	@echo "  [CXX]  $@"
+	@$(CXX) $(CXXFLAGS) $@ $<
 
 ## IO
 ./src/unittestes/io/array_io_unittest: \

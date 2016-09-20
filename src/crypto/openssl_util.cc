@@ -39,4 +39,15 @@ void ClearOpenSSLERRStack(const base::Location& location) {
   // ERR_clear_error();
 } 
 
+namespace {
+
+class crypto_register {
+ public:
+  crypto_register() {
+    EnsureOpenSSLInit();
+  }
+};
+static crypto_register crypto_register_;
+
+} // namespace
 } // namespace crypto

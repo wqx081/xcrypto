@@ -34,10 +34,9 @@ int IOUtil::ReadFromInput(InputStream* input,
 }
 
 bool IOUtil::PeekInput(InputStream* input) {
-  char in_buf[1];
-  int in_size = 1;
-  int ret = ReadFromInput(input, in_buf, in_size);
-  if (ret == 0) {
+  const void* in;
+  int in_size = 0;
+  if (!input->Next(&in, &in_size)) {
     return false;
   }
   input->BackUp(in_size);

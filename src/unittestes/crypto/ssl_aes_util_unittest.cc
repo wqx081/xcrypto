@@ -16,18 +16,6 @@
 
 namespace crypto {
 
-namespace {
-
-class crypto_register {
- public:
-  crypto_register() {
-    EnsureOpenSSLInit();
-  }
-};
-static crypto_register crypto_register_;
-
-} // namespace
-
 TEST(CBCCrypt, Test) {
 
   std::unique_ptr<AESKey> key = AESKey::Create(128);
@@ -71,6 +59,14 @@ TEST(ECBCrypt, TEST) {
 
   EXPECT_TRUE(SslAESUtil::ECBEncrypt(raw_key, &input, &output));
   LOG(INFO) << "cipher: " << strings::HexEncode(cipher);
+
+  io::StringInputStream input1(cipher.data(), cipher.size());
+  std::string plaint;
+  io::StringOutputStream output1(&plaint);
+  EXPECT_TRUE(SslAESUtil::ECBDecrypt(raw_key, &input1, &output1));
+
+  LOG(INFO) << "plaint: " << plaint;
+
 }
 
 
