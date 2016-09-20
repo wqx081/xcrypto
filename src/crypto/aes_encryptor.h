@@ -30,10 +30,10 @@ class AESFactory {
  public:
   virtual ~AESFactory() {}
 
-  virtual std::unique_ptr<AESEncryptor> CreateCBC(std::unique_ptr<AESKey> key, 
+  virtual std::unique_ptr<AESEncryptor> CreateCBC(std::unique_ptr<AESKey>& key, 
                                                   const std::string& iv) = 0;
-  virtual std::unique_ptr<AESEncryptor> CreateECB(std::unique_ptr<AESKey> key) = 0;
-  virtual std::unique_ptr<AESEncryptor> CreateCTR(std::unique_ptr<AESKey> key) = 0;
+  virtual std::unique_ptr<AESEncryptor> CreateECB(std::unique_ptr<AESKey>& key) = 0;
+  virtual std::unique_ptr<AESEncryptor> CreateCTR(std::unique_ptr<AESKey>& key) = 0;
   virtual bool AcceptsOptions(const std::string& encryptor_type) = 0;
 
   static void Register(const std::string& encryptor_type, AESFactory* factory);
